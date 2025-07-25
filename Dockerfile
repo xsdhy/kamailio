@@ -40,4 +40,4 @@ ENV PATH="/usr/local/sbin:/usr/local/bin:${PATH}"
 ENV KAMAILIO_CFG=/usr/local/etc/kamailio/kamailio.cfg
 
 EXPOSE 5060/udp 5061/tcp 5062/tcp
-ENTRYPOINT ["kamailio","-m","512","-M","4096","-D","-E"]
+ENTRYPOINT ["kamailio","-m","512","-M","8","-D","-E"]
