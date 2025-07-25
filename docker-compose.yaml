@@ -1,0 +1,10 @@
+version: "3"
+services:
+  kamailio:
+    build: .
+    network_mode: host
+    restart: always
+    volumes:
+      - "./kamailio.lua:/etc/kamailio/kamailio-lua.lua"
+      - "./kamailio.cfg:/etc/kamailio/kamailio.cfg"
+      - "./dispatcher.list:/etc/kamailio/dispatcher.list"
