@@ -8,10 +8,11 @@ ENV KAM_VERSION=5.6.4
 # ── 构建依赖 ──
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      git build-essential bison flex \
+      git build-essential bison flex pkg-config \        # ← 新增 pkg-config
       libssl-dev libcurl4-openssl-dev libpcre3-dev libxml2-dev \
       liblua5.3-dev libunistring-dev libevent-dev libev-dev \
       libmicrohttpd-dev libwebsockets-dev libsctp-dev \
+      libjansson-dev \                                   # ← 新增 libjansson-dev
       ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
@@ -23,27 +24,24 @@ RUN git clone --depth 1 --branch ${KAM_VERSION} https://github.com/kamailio/kama
 WORKDIR /usr/src/kamailio
 RUN make cfg include_modules="app_lua ndb_lua outbound websocket tls utils" && \
     make -j$(nproc) && \
-    make install        # 会把 kamailio.cfg 等装到 /usr/local/etc/kamailio
+    make install
 
 ###########################
 # 2) ── 运行阶段 ──────────
 ###########################
 FROM debian:11
 
-# ── 运行时依赖（无 *-dev 包）─
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libssl1.1 libcurl4 libpcre3 libxml2 \
       liblua5.3 libunistring2 libevent-2.1-7 libev4 \
       libmicrohttpd12 libwebsockets16 libsctp1 \
-      ca-certificates && \
+      libjansson4 ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ── 拷贝 Kamailio ──
 COPY --from=builder /usr/local /usr/local
 ENV PATH="/usr/local/sbin:/usr/local/bin:${PATH}"
 ENV KAMAILIO_CFG=/usr/local/etc/kamailio/kamailio.cfg
 
-# ── 端口 / 启动命令 ──
 EXPOSE 5060/udp 5061/tcp 5062/tcp
 ENTRYPOINT ["kamailio","-m","512","-M","4096","-D","-E"]
