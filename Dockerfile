@@ -3,10 +3,9 @@
 ###########################
 FROM debian:11 AS builder
 
-# ---- 版本号 -------
 ENV KAM_VERSION=5.6.4
 
-# ---- 构建依赖 ------
+# ── 构建依赖 ──
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       git build-essential bison flex \
@@ -16,25 +15,22 @@ RUN apt-get update && \
       ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# ---- 获取源码 ------
+# ── 获取源码 ──
 WORKDIR /usr/src
 RUN git clone --depth 1 --branch ${KAM_VERSION} https://github.com/kamailio/kamailio.git
 
-# ---- 生成 Makefile 并选择模块 ----
+# ── 选择并编译模块 ──
 WORKDIR /usr/src/kamailio
-RUN make cfg \
-    include_modules="app_lua ndb_lua outbound websocket tls utils"  # 仅编译所需模块 \
-    && make -j$(nproc) && make install  # 编译 + 安装
-
-# 把默认配置也复制出来，方便在运行阶段使用或自定义
-RUN cp -r etc/kamailio /usr/local/etc/
+RUN make cfg include_modules="app_lua ndb_lua outbound websocket tls utils" && \
+    make -j$(nproc) && \
+    make install        # 会把 kamailio.cfg 等装到 /usr/local/etc/kamailio
 
 ###########################
-# 2) ── 运行阶段 ────────
+# 2) ── 运行阶段 ──────────
 ###########################
 FROM debian:11
 
-# ---- 运行时依赖（无 *-dev 包）----
+# ── 运行时依赖（无 *-dev 包）─
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       libssl1.1 libcurl4 libpcre3 libxml2 \
@@ -43,11 +39,11 @@ RUN apt-get update && \
       ca-certificates && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# ---- 拷贝已编译的 Kamailio ----
+# ── 拷贝 Kamailio ──
 COPY --from=builder /usr/local /usr/local
 ENV PATH="/usr/local/sbin:/usr/local/bin:${PATH}"
 ENV KAMAILIO_CFG=/usr/local/etc/kamailio/kamailio.cfg
 
-# ---- 端口 / 启动命令 ----
+# ── 端口 / 启动命令 ──
 EXPOSE 5060/udp 5061/tcp 5062/tcp
 ENTRYPOINT ["kamailio","-m","512","-M","4096","-D","-E"]
