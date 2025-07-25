@@ -11,4 +11,10 @@ RUN apt-get update && apt-get install -y wget gnupg && \
 
 EXPOSE 5060/udp 5061/tcp 5062/tcp
 
-ENTRYPOINT ["kamailio","-DDE"]
+ENTRYPOINT [
+  "kamailio",
+  "-m", "512",
+  "-M", "4096",
+  "-D",
+  "-E"
+]

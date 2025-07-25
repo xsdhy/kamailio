@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'prod'
 
 jobs:
   docker:
@@ -30,4 +31,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: xsdhy/kamailio:main
+          tags: xsdhy/kamailio:prod
