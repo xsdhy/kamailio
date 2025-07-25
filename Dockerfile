@@ -1,34 +1,53 @@
-# ---- 基础镜像 ----
-  FROM debian:11
+###########################
+# 1) ── 构建阶段 ──────────
+###########################
+FROM debian:11 AS builder
 
-  # ---- 安装 Kamailio 5.6.4 与指定模块 ----
-  RUN set -eux; \
-      # 基础工具
-      apt-get update && \
-      apt-get install -y --no-install-recommends ca-certificates gnupg wget ; \
-      \
-      # 导入官方 GPG key（新方式，存放在 /usr/share/keyrings）
-      wget -qO /usr/share/keyrings/kamailio.gpg https://deb.kamailio.org/kamailiodebkey.gpg ; \
-      \
-      # 启用 5.6 分支仓库
-      echo "deb [signed-by=/usr/share/keyrings/kamailio.gpg] http://deb.kamailio.org/kamailio56 bullseye main" \
-          > /etc/apt/sources.list.d/kamailio56.list ; \
-      \
-      # 安装核心与模块（全部锁定到 5.6.4）
-      apt-get update && \
-      apt-get install -y --no-install-recommends \
-          kamailio=5.6.4* \
-          kamailio-lua-modules=5.6.4* \
-          kamailio-outbound-modules=5.6.4* \
-          kamailio-websocket-modules=5.6.4* \
-          kamailio-tls-modules=5.6.4* \
-          kamailio-utils-modules=5.6.4* ; \
-      \
-      # 镜像瘦身
-      apt-get clean && \
-      rm -rf /var/lib/apt/lists/*
-  
-  # ---- 运行配置 ----
-  EXPOSE 5060/udp 5061/tcp 5062/tcp
-  
-  ENTRYPOINT ["kamailio", "-m", "512", "-M", "4096", "-D", "-E"]
+# ---- 版本号 -------
+ENV KAM_VERSION=5.6.4
+
+# ---- 构建依赖 ------
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      git build-essential bison flex \
+      libssl-dev libcurl4-openssl-dev libpcre3-dev libxml2-dev \
+      liblua5.3-dev libunistring-dev libevent-dev libev-dev \
+      libmicrohttpd-dev libwebsockets-dev libsctp-dev \
+      ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# ---- 获取源码 ------
+WORKDIR /usr/src
+RUN git clone --depth 1 --branch ${KAM_VERSION} https://github.com/kamailio/kamailio.git
+
+# ---- 生成 Makefile 并选择模块 ----
+WORKDIR /usr/src/kamailio
+RUN make cfg \
+    include_modules="app_lua ndb_lua outbound websocket tls utils"  # 仅编译所需模块 \
+    && make -j$(nproc) && make install  # 编译 + 安装
+
+# 把默认配置也复制出来，方便在运行阶段使用或自定义
+RUN cp -r etc/kamailio /usr/local/etc/
+
+###########################
+# 2) ── 运行阶段 ────────
+###########################
+FROM debian:11
+
+# ---- 运行时依赖（无 *-dev 包）----
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libssl1.1 libcurl4 libpcre3 libxml2 \
+      liblua5.3 libunistring2 libevent-2.1-7 libev4 \
+      libmicrohttpd12 libwebsockets16 libsctp1 \
+      ca-certificates && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# ---- 拷贝已编译的 Kamailio ----
+COPY --from=builder /usr/local /usr/local
+ENV PATH="/usr/local/sbin:/usr/local/bin:${PATH}"
+ENV KAMAILIO_CFG=/usr/local/etc/kamailio/kamailio.cfg
+
+# ---- 端口 / 启动命令 ----
+EXPOSE 5060/udp 5061/tcp 5062/tcp
+ENTRYPOINT ["kamailio","-m","512","-M","4096","-D","-E"]
