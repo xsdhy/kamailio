@@ -15,9 +15,8 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libxml2-dev \
     libpcre3-dev \
-    libmysqlclient-dev \
+    libmariadb-dev \
     libpq-dev \
-    libradcli-dev \
     libhiredis-dev \
     libmemcached-dev \
     libjson-c-dev \
