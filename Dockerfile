@@ -29,11 +29,13 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# 下载并编译 Kamailio
+# 安装 git
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+
+# 从 GitHub 克隆并编译 Kamailio
 RUN cd /usr/src && \
-    wget https://www.kamailio.org/pub/kamailio/${KAMAILIO_VERSION}/src/kamailio-${KAMAILIO_VERSION}_src.tar.gz && \
-    tar -xzf kamailio-${KAMAILIO_VERSION}_src.tar.gz && \
-    cd kamailio-${KAMAILIO_VERSION} && \
+    git clone --depth 1 --branch ${KAMAILIO_VERSION} https://github.com/kamailio/kamailio.git kamailio && \
+    cd kamailio && \
     make FLAVOUR=kamailio \
          include_modules="app_lua websocket tls auth outbound nathelper http_client utils" \
          cfg prefix=/usr \
@@ -43,7 +45,7 @@ RUN cd /usr/src && \
     make all && \
     make install && \
     cd / && \
-    rm -rf /usr/src/kamailio-*
+    rm -rf /usr/src/kamailio
 
 # 创建必要的目录
 RUN mkdir -p /etc/kamailio && \
@@ -51,7 +53,7 @@ RUN mkdir -p /etc/kamailio && \
 
 # 清理
 RUN apt-get purge -y --auto-remove \
-    gcc g++ make bison flex wget && \
+    gcc g++ make bison flex wget git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
