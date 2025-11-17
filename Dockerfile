@@ -36,14 +36,19 @@ RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 RUN cd /usr/src && \
     git clone --depth 1 --branch ${KAMAILIO_VERSION} https://github.com/kamailio/kamailio.git kamailio && \
     cd kamailio && \
-    make FLAVOUR=kamailio \
-         include_modules="app_lua websocket tls auth outbound nathelper http_client utils" \
-         cfg prefix=/usr \
+    make cfg \
+         prefix=/usr \
          cfg-dir=/etc/kamailio/ \
          bin-dir=/usr/sbin/ \
          modules-dir=/usr/lib/x86_64-linux-gnu/kamailio/modules/ && \
-    make all && \
-    make install && \
+    make -C src/ modules modules-install cfg-install && \
+    make install-bin && \
+    echo "=========== 已安装的模块列表 ===========" && \
+    ls -1 /usr/lib/x86_64-linux-gnu/kamailio/modules/*.so | head -20 && \
+    echo "=========== 检查关键模块 ===========" && \
+    ls /usr/lib/x86_64-linux-gnu/kamailio/modules/outbound.so && \
+    ls /usr/lib/x86_64-linux-gnu/kamailio/modules/websocket.so && \
+    ls /usr/lib/x86_64-linux-gnu/kamailio/modules/app_lua.so && \
     cd / && \
     rm -rf /usr/src/kamailio
 

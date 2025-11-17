@@ -26,9 +26,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Generate date tag
+        id: date
+        run: echo "date=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+      -
         name: Build and push
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: xsdhy/kamailio:dev
+          tags: |
+            xsdhy/kamailio:dev
+            xsdhy/kamailio:dev-${{ steps.date.outputs.date }}
