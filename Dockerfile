@@ -36,19 +36,13 @@ RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 RUN cd /usr/src && \
     git clone --depth 1 --branch ${KAMAILIO_VERSION} https://github.com/kamailio/kamailio.git kamailio && \
     cd kamailio && \
-    make cfg \
-         prefix=/usr \
-         cfg-dir=/etc/kamailio/ \
-         bin-dir=/usr/sbin/ \
-         modules-dir=/usr/lib/x86_64-linux-gnu/kamailio/modules/ && \
+    make cfg prefix=/usr cfg-dir=/etc/kamailio/ && \
     make all && \
     make install && \
-    echo "=========== 已安装的模块列表 ===========" && \
-    ls -1 /usr/lib/x86_64-linux-gnu/kamailio/modules/*.so | head -20 && \
-    echo "=========== 检查关键模块 ===========" && \
-    ls /usr/lib/x86_64-linux-gnu/kamailio/modules/outbound.so && \
-    ls /usr/lib/x86_64-linux-gnu/kamailio/modules/websocket.so && \
-    ls /usr/lib/x86_64-linux-gnu/kamailio/modules/app_lua.so && \
+    echo "=========== 查找模块安装位置 ===========" && \
+    find /usr -name "*.so" -path "*/kamailio/modules/*" 2>/dev/null | head -5 && \
+    echo "=========== 验证关键模块 ===========" && \
+    find /usr -name "outbound.so" -o -name "websocket.so" -o -name "app_lua.so" 2>/dev/null && \
     cd / && \
     rm -rf /usr/src/kamailio
 
