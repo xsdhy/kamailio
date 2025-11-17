@@ -41,8 +41,8 @@ RUN cd /usr/src && \
          cfg-dir=/etc/kamailio/ \
          bin-dir=/usr/sbin/ \
          modules-dir=/usr/lib/x86_64-linux-gnu/kamailio/modules/ && \
-    make -C src/ modules modules-install cfg-install && \
-    make install-bin && \
+    make all && \
+    make install && \
     echo "=========== 已安装的模块列表 ===========" && \
     ls -1 /usr/lib/x86_64-linux-gnu/kamailio/modules/*.so | head -20 && \
     echo "=========== 检查关键模块 ===========" && \
