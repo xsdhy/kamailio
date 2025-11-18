@@ -37,6 +37,4 @@ RUN apt-get purge -y --auto-remove \
 
 EXPOSE 5060/udp 5061/tcp 5062/tcp
 
-ENTRYPOINT ["kamailio","-DD","-E",
-            "-m","512","-M","8",
-            "-f","/etc/kamailio/kamailio.cfg"]
+ENTRYPOINT ["kamailio","-DD","-E","-m","512","-M","8","-f","/etc/kamailio/kamailio.cfg"]
