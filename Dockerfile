@@ -33,7 +33,7 @@ RUN cd /usr/src && \
     git clone --depth 1 --branch ${KAMAILIO_VERSION} https://github.com/kamailio/kamailio.git && \
     cd kamailio && \
     make FLAVOUR=kamailio \
-         include_modules="app_lua http_client websocket tls xhttp_prom jsonrpcs" \
+         include_modules="app_lua http_client websocket tls xhttp_prom jsonrpcs outbound" \
          cfg prefix=/usr cfg-dir=/etc/kamailio/ && \
     make all && \
     make install && \
