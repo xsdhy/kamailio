@@ -39,10 +39,14 @@ RUN cd /usr/src && \
     make cfg prefix=/usr cfg-dir=/etc/kamailio/ && \
     make all && \
     make install && \
-    echo "=========== 查找模块安装位置 ===========" && \
-    find /usr -name "*.so" -path "*/kamailio/modules/*" 2>/dev/null | head -5 && \
-    echo "=========== 验证关键模块 ===========" && \
-    find /usr -name "outbound.so" -o -name "websocket.so" -o -name "app_lua.so" 2>/dev/null && \
+    echo "=========== 所有已安装的模块（前30个）===========" && \
+    ls /usr/lib64/kamailio/modules/*.so 2>/dev/null | wc -l && \
+    ls /usr/lib64/kamailio/modules/*.so 2>/dev/null | head -30 && \
+    echo "=========== 检查关键模块是否存在 ===========" && \
+    ls -lh /usr/lib64/kamailio/modules/outbound.so 2>/dev/null || echo "❌ outbound.so 不存在" && \
+    ls -lh /usr/lib64/kamailio/modules/websocket.so 2>/dev/null || echo "❌ websocket.so 不存在" && \
+    ls -lh /usr/lib64/kamailio/modules/app_lua.so 2>/dev/null || echo "❌ app_lua.so 不存在" && \
+    ls -lh /usr/lib64/kamailio/modules/tls.so 2>/dev/null || echo "❌ tls.so 不存在" && \
     cd / && \
     rm -rf /usr/src/kamailio
 
