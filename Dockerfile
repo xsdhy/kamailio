@@ -3,16 +3,30 @@ FROM debian:11
 ENV KAMAILIO_VERSION=5.7
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ make bison flex \
-    libssl-dev libcurl4-openssl-dev \
-    libxml2-dev libpcre3-dev \
-    libmariadb-dev libpq-dev \
-    libhiredis-dev libmemcached-dev \
-    libjson-c-dev libevent-dev \
-    libncurses5-dev libunistring-dev \
-    lua5.1 liblua5.1-0-dev \
-    ca-certificates wget git \
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    git \
+    make \
+    bison \
+    flex \
+    pkg-config \
+    lua5.1 \
+    liblua5.1-0-dev \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libxml2-dev \
+    libpcre3-dev \
+    libmariadb-dev \
+    libpq-dev \
+    libhiredis-dev \
+    libmemcached-dev \
+    libjson-c-dev \
+    libevent-dev \
+    libncurses5-dev \
+    libunistring-dev \
+    wget \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 RUN cd /usr/src && \
