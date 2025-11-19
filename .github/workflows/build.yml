@@ -36,5 +36,5 @@ jobs:
           context: .
           push: true
           tags: |
-            xsdhy/kamailio:dev
-            xsdhy/kamailio:dev-${{ steps.date.outputs.date }}
+            xsdhy/kamailio:5.7
+            xsdhy/kamailio:${{ steps.date.outputs.date }}
